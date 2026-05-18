@@ -136,6 +136,9 @@ model Application {
   candidate            Candidate      @relation(fields: [candidateId], references: [id])
   interviewStep        InterviewStep  @relation(fields: [currentInterviewStep], references: [id])
   interviews           Interview[]
+
+  @@index([positionId])
+  @@index([candidateId])
 }
 
 model Interview {
@@ -150,4 +153,6 @@ model Interview {
   application      Application    @relation(fields: [applicationId], references: [id])
   interviewStep    InterviewStep  @relation(fields: [interviewStepId], references: [id])
   employee         Employee       @relation(fields: [employeeId], references: [id])
+
+  @@index([applicationId])
 }
