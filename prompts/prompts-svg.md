@@ -504,7 +504,7 @@ Quiero que determines:
 7. Qué anti-patterns REST evitar.
 8. Qué estrategia seguirías para mantener backward compatibility.
 
-Documéntalo en docs/nuevos-disennos.md
+Documéntalo en docs/diseno-get.md
 ````
 
 ---
@@ -512,7 +512,7 @@ Documéntalo en docs/nuevos-disennos.md
 # Prompt 5 - Ajustar el diseño exclusivamente a lo solicitado
 
 ````markdown
-La solución aportada en docs/nuevos-disennos.md debe ajustarse exclusivamente a lo solicitado:
+La solución aportada en docs/diseno-get.md debe ajustarse exclusivamente a lo solicitado:
 
 Este endpoint recogerá todos los candidatos en proceso para una determinada posición, es decir, todas las aplicaciones para un determinado positionID. Debe proporcionar la siguiente información básica:
 
@@ -548,7 +548,7 @@ Necesito que evalúes:
 8. Qué datos NO deberían cargarse innecesariamente.
 9. Qué estrategia usarías para evitar overfetching.
 
-Documéntalo en docs/nuevos-disennos.md
+Documéntalo en docs/diseno-get.md
 ```` 
 ---
 
@@ -583,7 +583,7 @@ Quiero que definas:
 11. Cómo mantener consistencia con el resto del proyecto.
 12. Qué refactors mínimos recomendarías antes de implementarlo.
 
-Documéntalo en docs/nuevos-disennos.md
+Documéntalo en docs/diseno-get.md
 ````
 
 ---
@@ -1782,3 +1782,264 @@ Quiero casos prácticos para probar en:
 - Swagger
 ```` 
 
+---
+
+# Prompt 15 -  Análisis y Documentación de Decisiones de Diseño de endpoint put
+
+```markdown
+Analiza el proyecto para entender el dominio de candidatos y etapas de entrevistas.
+
+Objetivo
+Diseñar: PUT /candidates/:id/stage - Actualiza la etapa (currentInterviewStep) de un candidato.
+
+Análisis
+1. **Schema (schema.prisma)**:
+   - Cómo se relacionan: Candidate, Application, Position, InterviewStep, InterviewFlow
+   - Qué representa currentInterviewStep
+   - Campos relevantes de InterviewStep
+2. **Código existente**:
+   - Cómo se accede a las aplicaciones de un candidato
+   - Validaciones existentes
+   - Manejo de errores
+
+Decisiones a documentar
+1. ¿Cómo identificamos qué posición actualizar?
+2. ¿Se permite mover a cualquier etapa o solo secuencialmente?
+3. ¿Qué validación del nuevo step?
+4. ¿Qué devuelve el endpoint?
+
+Formato
+Crea `docs/diseno-put.md` con este formato:
+```markdown
+
+Deicsiones de Diseño - PUT /candidates/:id/stage
+- Resumen del Dominio
+[Explicación basada en el código]
+- Decisión 1: [Título]
+  - Problema: ...
+  - Evidencia del código: [referencias concretas]
+  - Solución: ...
+-  Decisión 2: [Título]
+...
+Incluye referencias al código que sustenta cada decisión.
+````
+
+---
+
+# Prompt 16 - Análisis y actualización del documento de diseño
+
+````markdown
+Analiza el proyecto para actualizar el documento de decisiones de diseño.
+
+Objetivo
+El endpoint solicitado originalmente es:
+PUT /candidates/:id/stage (donde :id = candidateId)
+El documento actual (docs/diseno-put.md) propone una ruta anidada diferente. Necesita actualizarse a la URL original.
+
+Tarea
+1. Revisa docs/diseno-put.md para entender las decisiones actuales
+2. Analiza el código existente para determinar qué parámetro es más adecuado para identificar la aplicación:
+   - applicationId en el body
+   - positionId en el body
+3. Justifica basándote en:
+   - Relaciones del schema (Candidate, Application, Position)
+   - Referencias al código
+   - Pros/contras de cada opción
+
+Actualización requerida
+Una vez determinado el parámetro adecuado, actualiza docs/diseno-put.md:
+- URL: PUT /candidates/:id/stage
+- Body: { <parámetroelegido>: number, newStepId: number, notes?: string }
+- Mantener las validaciones existentes
+- Mantener el formato de respuesta
+Modifica las secciones necesarias:
+- Decisión 1: Identificación de la Aplicación
+- Decisión 3: Validaciones de Negocio  
+- Decisión 5: Notas Opcionales
+- Contrato Final
+- Resumen de decisiones
+Incluye referencias al código que sustenta la elección final.
+```` 
+
+---
+
+# Prompt 17 - TDD - Test rojos
+
+````markdown
+Implementa: PUT /candidates/:candidateId/stage
+Consulta las decisiones en docs/diseno-put.md para entender el contrato y docs/arquitectura-backend.md para la arquitectura.
+## Tarea
+Escribe los tests rojos en Jest ANTES de implementar el código. Ubicación: `backend/src/__tests__/` o crear la carpeta si no existe.
+
+Tests a escribir
+
+- Service Tests
+    1. Update exitoso - devuelve aplicación actualizada con todos los campos
+    2. Update con notas opcionales (null)
+    3. Candidate no existe → throw Error "Candidate not found"
+    4. Application no existe → throw Error "Application not found"  
+    5. Application no pertenece al candidato → throw Error "Application does not belong to candidate"
+    6. Position cerrada (status="Closed") → throw Error "Cannot update stage for closed position"
+    7. newStepId no existe → throw Error "Interview step not found"
+    8. newStepId no pertenece al interviewFlow de la posición → throw Error "Interview step does not belong to position interview flow"
+
+- Controller Tests (usando supertest o similar si está disponible)
+    1. 200 cuando todo válido
+    2. 400 cuando position cerrada
+    3. 404 cuando candidate/application/step no existe
+    4. 403 cuando aplicación no pertenece al candidato
+    5. 400 cuando ID inválido (parseInt fails)
+
+Formato
+```typescript
+describe('updateCandidateStage', () => {
+  it('should update stage successfully', async () => { ... });
+  it('should throw error when candidate not found', async () => { 
+    await expect(...).rejects.toThrow('Candidate not found');
+  });
+});
+Notas
+- No implementes el código todavía - solo los tests
+- Usa describe/it de Jest
+- Mantén los nombres de funciones que usarás luego en la implementación
+- No uses mocks
+````
+
+---
+
+# Prompt 18 - Implementación mínima (test verde)
+
+````markdown
+Los tests ya están escritos. Ahora implementa el código mínimo para que pasen.
+
+Archivos a crear/modificar
+1. **Service**: `backend/src/application/services/candidateService.ts`
+   - Añadir función: `updateCandidateStage(candidateId: number, applicationId: number, newStepId: number, notes?: string)`
+2. **Controller**: `backend/src/presentation/controllers/candidateController.ts`
+   - Añadir función: `updateCandidateStage(req, res)`
+3. **Route**: `backend/src/routes/candidateRoutes.ts`
+   - Añadir: `router.put('/:id/stage', updateCandidateStage)`
+
+Validaciones (según docs/diseno-put.md)
+El flujo debe ser:
+1. Parsear candidateId de params
+2. Parsear applicationId, newStepId, notes del body
+3. Validar IDs con parseInt + isNaN
+4. Verificar application existe y pertenece al candidato
+5. Verificar position.status != "Closed"
+6. Verificar newStepId existe
+7. Verificar newStepId.interviewFlowId == position.interviewFlowId
+8. Actualizar currentInterviewStep y optionalmente notes
+
+Response 200 esperado
+```json
+{
+  "applicationId": 1,
+  "candidateId": 1,
+  "positionId": 1,
+  "positionTitle": "Senior Developer",
+  "previousStepId": 1,
+  "previousStepName": "Aplicación Recibida",
+  "currentInterviewStep": 2,
+  "stepName": "Entrevista HR",
+  "stepOrder": 2,
+  "notes": "Notas opcionales",
+  "updatedAt": "2024-01-15T10:30:00Z"
+}
+Notas
+- NO hace falta optimize - solo lo necesario para que pasen los tests
+- Mantén el estilo del proyecto (error handling simple, sin sobreingeniería)
+- Imports desde las capas correctas como se muestra en docs/arquitectura-backend.md
+- No uses mocks
+
+```` 
+
+---
+
+# Prompt 19 - Refactor
+
+````markdown
+Los tests ya pasan. Ahora mejora el código sin cambiar funcionalidad.
+
+Área de mejora
+1. **PrismaClient**: Si creaste una nueva instancia, refactoriza para importar de donde ya existe (evitar múltiples instancias)
+2. **Magic numbers**: Si hay hardcoded valores (ej: 10 para decimales), extraer a constantes con nombres descriptivos
+3. **Duplicación**: Si hay código repetido entre funciones similares, extraer a funciones reutilizables
+4. **Validación**: Asegurar que parseInt/isNaN está bien manejado en todos los paths
+5. **Edge cases**: Verificar que no haya null pointer errors o casos no cubiertos
+
+Lo que NO debes hacer (mantener)
+- Repository pattern
+- Dependency injection
+- DTOs complejos
+- Clases de error enterprise
+- Cache
+
+Verificación
+- Todos los tests siguen pasando
+- El código es más limpio que antes
+- Mantiene consistencia con el proyecto
+```` 
+
+---
+
+# Prompt 20 - Review del código
+
+```` markdown
+Haz una code review senior exhaustiva del código implementado.
+
+Analiza:
+- consistencia con arquitectura actual
+- bugs potenciales
+- edge cases
+- Prisma best practices
+- overfetching
+- posibles N+1
+- naming
+- legibilidad
+- maintainability
+- simplicidad vs calidad
+- si hay sobreingeniería
+- si hay deuda técnica innecesaria
+
+Quiero feedback pragmático y realista como en una Pull Request profesional.
+
+````
+
+---
+
+# Prompt 21 - Aplicar correcciones
+
+````markdown
+Aplica las correcciones detectadas en la code review al endpoint:
+
+PUT /candidates/:id/stage
+
+Cambios obligatorios:
+1. N+1 → reducir a 2-3 queries
+2. Duplicación → mover constantes a un shared file
+5. Mantener el enfoque pragmático actual.
+6. NO introducir:
+   - repository pattern
+   - dependency injection
+   - DTO system complejo
+   - error classes enterprise
+   - cache
+   - sobreingeniería
+
+Quiero:
+- código final corregido
+- listo para merge
+- consistente con la arquitectura actual
+- manteniendo simplicidad
+- manteniendo buenas prácticas razonables
+
+Verifica:
+- Todos los tests siguen pasando
+- El código es más limpio que antes
+- Mantiene consistencia con el proyecto
+
+Además:
+- documenta brevemente los edge cases conocidos
+- indica qué deuda técnica queda aceptada conscientemente
+```` 
