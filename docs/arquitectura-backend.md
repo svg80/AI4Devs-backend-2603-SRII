@@ -8,7 +8,7 @@
 
 El proyecto utiliza una **arquitectura híbrida de tres capas con patrón Active Record**:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        PRESENTATION LAYER                          │
 │  routes/ (candidateRoutes.ts)          → HTTP routing + errores   │
@@ -173,7 +173,7 @@ if (this.resumes.length > 0) {
 
 ### 3.3 Flujo de Lógica para POST /candidates
 
-```
+```text
 Routes: req.body → controller
     ↓
 Service: validateCandidateData() → crear instancia Candidate
@@ -227,7 +227,7 @@ if (error instanceof Prisma.PrismaClientInitializationError) {
 | **console.log en lugar de logger** | `Candidate.ts:100`, `candidateService.ts:62` | Sin niveles, difícil auditoría |
 | **Error genérico thrown** | Todo el proyecto | Sin stack trace útil, sin código |
 | **Sin mensaje en 500** | `candidateController.ts:30` | Dificulta debugging |
-| **catch sin tipado** | `candidateService.ts:10` | `error: any` obscures类型 |
+| **catch sin tipado** | `candidateService.ts:10` | `error: any` oscurece el tipo |
 
 ---
 
@@ -298,7 +298,7 @@ include: {
 
 ### 6.1 Estructura de Archivos
 
-```
+```text
 backend/src/
 ├── index.ts                           # Entry point Express
 ├── application/
@@ -411,7 +411,7 @@ if (isNaN(id)) {
 | **7** | Sin transacción para writes múltiples | `candidateService.ts` | Datos inconsistentes si falla parcial | `prisma.$transaction` |
 | **8** | Error genérico thrown | Todo el proyecto | Sin stack trace útil, sin código | Clases error personalizadas |
 | **9** | Validación retorna undefined | `validator.ts:81-84` | Comportamiento confuso | Lanzar Error explícito |
-| **10** | catch sin tipado | `candidateService.ts:10` | `error: any` obscura el tipo | `error: unknown` |
+| **10** | catch sin tipado | `candidateService.ts:10` | `error: any` oscurece el tipo | `error: unknown` |
 
 ### Ejemplo del Problema #1 (Singleton)
 
@@ -520,7 +520,7 @@ export const getCandidatesByPosition = async (positionId: number) => {
 
             return {
                 ...app,
-                averageScore: avg ? Math.round(avg * 100) / 100 : null
+                averageScore: avg ? Math.round(avg * 10) / 10 : null
             };
         });
 
@@ -616,7 +616,7 @@ app.use('/positions', positionRoutes);
 
 ## 11. Resumen Visual del Flujo
 
-```
+```text
 HTTP Request
     │
     ▼

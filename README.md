@@ -141,7 +141,7 @@ POST http://localhost:3010/candidates
             "endDate": "2010-12-26"
         }
     ],
-    "workExperiences": [
+"workExperiences": [
         {
             "company": "Coca Cola",
             "position": "SWE",
@@ -157,9 +157,203 @@ POST http://localhost:3010/candidates
 }
 ```
 
---------------------------------------------
+---
 
-# LTI - Sistema de Seguimiento de Talento | ES
+## Testing | EN
+
+This project includes automated tests using Jest. Tests are located in `backend/src/__tests__/`.
+
+### Running Tests
+
+```sh
+cd backend
+npm test
+```
+
+### Test Files
+
+- `updateCandidateStage.service.test.ts` - Tests for PUT /candidates/:id/stage service layer
+- `updateCandidateStage.controller.test.ts` - Tests for PUT /candidates/:id/stage controller layer (with mocks)
+- `getCandidatesByPosition.test.ts` - Tests for GET /positions/:id/candidates endpoint
+
+### Test Coverage
+
+The test suite validates:
+- **PUT /candidates/:id/stage**: Update candidate interview stage
+  - Happy paths (stage update success)
+  - Error handling (candidate not found, application not found, invalid step)
+  - Controller validation (invalid IDs, HTTP status mapping)
+
+- **GET /positions/:id/candidates**: Get candidates by position
+  - Happy paths (with/without candidates)
+  - ID validation (text, negative, zero, float IDs return 400)
+  - 404 for non-existent positions
+  - Response structure validation
+  - Average score calculation
+
+---
+
+## Testing | ES
+
+Este proyecto incluye pruebas automatizadas usando Jest. Las pruebas están ubicadas en `backend/src/__tests__/`.
+
+### Ejecutar Tests
+
+```sh
+cd backend
+npm test
+```
+
+### Archivos de Tests
+
+- `updateCandidateStage.service.test.ts` - Tests para el servicio PUT /candidates/:id/stage
+- `updateCandidateStage.controller.test.ts` - Tests para el controlador PUT /candidates/:id/stage (con mocks)
+- `getCandidatesByPosition.test.ts` - Tests para el endpoint GET /positions/:id/candidates
+
+### Cobertura de Tests
+
+El conjunto de pruebas valida:
+- **PUT /candidates/:id/stage**: Actualizar etapa de entrevista del candidato
+  - Caminos felices (actualización de etapa exitosa)
+  - Manejo de errores (candidato no encontrado, aplicación no encontrada, paso inválido)
+  - Validación del controlador (IDs inválidos, mapeo de estados HTTP)
+
+- **GET /positions/:id/candidates**: Obtener candidatos por posición
+  - Caminos felices (con/sin candidatos)
+  - Validación de ID (texto, negativo, cero, float → 400)
+  - 404 para posiciones inexistentes
+  - Validación de estructura de respuesta
+  - Cálculo de puntuación promedio
+
+---
+
+## API Endpoints | EN
+
+### GET /positions/:id/candidates
+
+Returns a list of candidates for a specific position with their interview scores.
+
+**Request:**
+```
+GET http://localhost:3010/positions/:id/candidates
+```
+
+**Response (200):**
+```json
+{
+  "positionId": 1,
+  "positionTitle": "Software Engineer",
+  "candidates": [
+    {
+      "candidateId": 1,
+      "candidateName": "John Doe",
+      "currentInterviewStep": "Technical Interview",
+      "averageScore": 8.5
+    }
+  ]
+}
+```
+
+**Validation:**
+- ID must be a positive integer (returns 400 otherwise)
+- Returns 404 if position doesn't exist
+
+### PUT /candidates/:id/stage
+
+Updates the interview stage for a candidate's application.
+
+**Request:**
+```
+PUT http://localhost:3010/candidates/:id/stage
+{
+  "applicationId": 1,
+  "newStepId": 2
+}
+```
+
+**Response (200):**
+```json
+{
+  "applicationId": 1,
+  "candidateId": 1,
+  "positionId": 1,
+  "positionTitle": "Software Engineer",
+  "previousStepId": 1,
+  "previousStepName": "Initial Review",
+  "currentInterviewStep": 2,
+  "stepName": "Technical Interview",
+  "stepOrder": 2,
+  "notes": null,
+  "updatedAt": "2026-05-19T17:00:00.000Z"
+}
+```
+
+---
+
+## API Endpoints | ES
+
+### GET /positions/:id/candidates
+
+Devuelve una lista de candidatos para una posición específica con sus puntuaciones de entrevista.
+
+**Solicitud:**
+```
+GET http://localhost:3010/positions/:id/candidates
+```
+
+**Respuesta (200):**
+```json
+{
+  "positionId": 1,
+  "positionTitle": "Software Engineer",
+  "candidates": [
+    {
+      "candidateId": 1,
+      "candidateName": "John Doe",
+      "currentInterviewStep": "Technical Interview",
+      "averageScore": 8.5
+    }
+  ]
+}
+```
+
+**Validación:**
+- El ID debe ser un entero positivo (devuelve 400 en caso contrario)
+- Devuelve 404 si la posición no existe
+
+### PUT /candidates/:id/stage
+
+Actualiza la etapa de entrevista para la aplicación de un candidato.
+
+**Solicitud:**
+```
+PUT http://localhost:3010/candidates/:id/stage
+{
+  "applicationId": 1,
+  "newStepId": 2
+}
+```
+
+**Respuesta (200):**
+```json
+{
+  "applicationId": 1,
+  "candidateId": 1,
+  "positionId": 1,
+  "positionTitle": "Software Engineer",
+  "previousStepId": 1,
+  "previousStepName": "Initial Review",
+  "currentInterviewStep": 2,
+  "stepName": "Technical Interview",
+  "stepOrder": 2,
+  "notes": null,
+  "updatedAt": "2026-05-19T17:00:00.000Z"
+}
+```
+
+ --------------------------------------------
+
+ # LTI - Sistema de Seguimiento de Talento | ES
 
 Este proyecto es una aplicación full-stack con un frontend en React y un backend en Express usando Prisma como un ORM. El frontend se inicia con Create React App y el backend está escrito en TypeScript.
 

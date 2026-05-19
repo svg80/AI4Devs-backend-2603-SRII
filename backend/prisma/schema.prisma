@@ -132,6 +132,7 @@ model Application {
   applicationDate      DateTime
   currentInterviewStep Int
   notes                String?
+  updatedAt            DateTime       @updatedAt
   position             Position       @relation(fields: [positionId], references: [id])
   candidate            Candidate      @relation(fields: [candidateId], references: [id])
   interviewStep        InterviewStep  @relation(fields: [currentInterviewStep], references: [id])

@@ -2,9 +2,9 @@
 
 ## 1. Patrón Arquitectónico
 
-El proyecto utiliza una **arquitectura híbrida de tres capas con patrones de Active Record y Repository**:
+El proyecto utiliza una **arquitectura híbrida de tres capas con patrones de Active Record**:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        PRESENTATION LAYER                          │
 │  routes/ (candidateRoutes.ts) → HTTP routing                       │
@@ -26,7 +26,6 @@ El proyecto utiliza una **arquitectura híbrida de tres capas con patrones de Ac
 
 **Característica clave**: El modelo `Candidate.ts` combina:
 - **Active Record**: Los modelos tienen métodos `save()`, `findOne()` que interactúan directamente con Prisma
-- **Sin Repository explícito**: No hay una capa de abstracción de base de datos
 
 ---
 
@@ -179,7 +178,7 @@ include: {
 
 ## 6. Estructura del Proyecto
 
-```
+```text
 backend/src/
 ├── application/
 │   ├── services/
@@ -220,7 +219,7 @@ backend/src/
    import { Candidate } from '../../domain/models/Candidate';
    ```
 
-2. **Parámetros en services**: Siempre `any` para datos de entrada (validación luego)
+2. **Parámetros en services**: Actualmente se usa `any` para datos de entrada (validación luego), aunque DTOs tipados son preferibles.
 
 3. **Retorno de métodos**: Los métodos estáticos en modelos devuelven instancias del modelo o `null`
 
@@ -371,7 +370,7 @@ export default router;
 
 ## Resumen de Implementación Recomendada
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │  routes/candidateRoutes.ts                                  │
 │    → GET /search  → controller                               │
@@ -396,3 +395,8 @@ export default router;
 │  prisma.ts (singleton) → PrismaClient                        │
 └──────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+*Documento actualizado el 17 de Mayo de 2026*
+*Análisis basado en: Candidate.ts, candidateService.ts, candidateController.ts, candidateRoutes.ts*

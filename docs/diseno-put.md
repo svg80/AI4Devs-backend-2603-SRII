@@ -4,7 +4,7 @@
 
 ### Entidades y Relaciones
 
-```
+```text
 Candidate (1) ──── (N) Application ──── (1) Position
                                           │
                                           └── interviewFlowId
@@ -78,7 +78,7 @@ model Application {
 **Elección: applicationId**
 
 **Razones:**
-1. **准确性 (Exactitud)**: `applicationId` identifica unambiguously una aplicación específica. Un candidato puede tener varias aplicaciones, incluso a la misma posición (re-aplicaciones).
+1. **Exactitud**: `applicationId` identifica sin ambigüedad una aplicación específica. Un candidato puede tener varias aplicaciones, incluso a la misma posición (re-aplicaciones).
 
 2. **Consistencia con relaciones del schema**:
    - `Application` tiene `candidateId` + `positionId`
@@ -93,7 +93,7 @@ model Application {
 
 ### Solución Adoptada
 
-```
+```http
 PUT /candidates/:candidateId/stage
 Body: { "applicationId": number, "newStepId": number, "notes"?: string }
 ```
@@ -136,11 +136,11 @@ model Position {
 2. El `newStepId` debe pertenecer al `interviewFlowId` de la posición
 3. Opcional: ¿Restringir a siguiente paso nomás?
 
-### Opciones Considered
+### Opciones Consideradas
 
 | Opción | Comportamiento | Uso |
 |--------|---------------|-----|
-| A | Cualquier paso del flujo | Testing, bypass |
+| A | Cualquier paso del flujo | Pruebas, omisión |
 | B | Solo siguiente paso (orderIndex + 1) | Flujo lineal obligatorio |
 | C | Paso igual o siguiente | Permite estancamiento |
 
@@ -196,7 +196,7 @@ currentInterviewStep Int  // No nullable
 
 ### Flujo de Validación
 
-```
+```text
 1. Parsear applicationId del body
 2. applicationId existe? → 404 si no
 3. application.candidateId == :candidateId? → 403 si no
@@ -214,7 +214,7 @@ currentInterviewStep Int  // No nullable
 
 ¿Qué devuelve el endpoint después de actualizar?
 
-### Opciones Considered
+### Opciones Consideradas
 
 | Opción | Respuesta | Ventaja |
 |--------|-----------|---------|
@@ -331,7 +331,7 @@ try {
 
 ### Request
 
-```
+```http
 PUT /candidates/:candidateId/stage
 Content-Type: application/json
 

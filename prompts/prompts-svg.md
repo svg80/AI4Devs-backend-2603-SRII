@@ -1721,7 +1721,7 @@ Quiero feedback pragmático y realista como en una Pull Request profesional.
 
 ---
 
-# Prompt 13 - Aplicar correcciones
+# Prompt 12 - Aplicar correcciones
 
 ````markdown
 Aplica las correcciones detectadas en la code review al endpoint:
@@ -1756,7 +1756,7 @@ Además:
 
 ---
 
-# Prompt 14 - Generación de tests
+# Prompt 13 - Generación de tests
 
 ````markdown
 Genera una checklist profesional de testing manual para validar:
@@ -1784,7 +1784,7 @@ Quiero casos prácticos para probar en:
 
 ---
 
-# Prompt 15 -  Análisis y Documentación de Decisiones de Diseño de endpoint put
+# Prompt 14 -  Análisis y Documentación de Decisiones de Diseño de endpoint put
 
 ```markdown
 Analiza el proyecto para entender el dominio de candidatos y etapas de entrevistas.
@@ -1812,7 +1812,7 @@ Formato
 Crea `docs/diseno-put.md` con este formato:
 ```markdown
 
-Deicsiones de Diseño - PUT /candidates/:id/stage
+Decisiones de Diseño - PUT /candidates/:id/stage
 - Resumen del Dominio
 [Explicación basada en el código]
 - Decisión 1: [Título]
@@ -1826,7 +1826,7 @@ Incluye referencias al código que sustenta cada decisión.
 
 ---
 
-# Prompt 16 - Análisis y actualización del documento de diseño
+# Prompt 15 - Análisis y actualización del documento de diseño
 
 ````markdown
 Analiza el proyecto para actualizar el documento de decisiones de diseño.
@@ -1863,7 +1863,7 @@ Incluye referencias al código que sustenta la elección final.
 
 ---
 
-# Prompt 17 - TDD - Test rojos
+# Prompt 16 - TDD - Test rojos
 
 ````markdown
 Implementa: PUT /candidates/:candidateId/stage
@@ -1907,7 +1907,7 @@ Notas
 
 ---
 
-# Prompt 18 - Implementación mínima (test verde)
+# Prompt 17 - Implementación mínima (test verde)
 
 ````markdown
 Los tests ya están escritos. Ahora implementa el código mínimo para que pasen.
@@ -1956,7 +1956,7 @@ Notas
 
 ---
 
-# Prompt 19 - Refactor
+# Prompt 18 - Refactor
 
 ````markdown
 Los tests ya pasan. Ahora mejora el código sin cambiar funcionalidad.
@@ -1983,7 +1983,7 @@ Verificación
 
 ---
 
-# Prompt 20 - Review del código
+# Prompt 19 - Review del código
 
 ```` markdown
 Haz una code review senior exhaustiva del código implementado.
@@ -2008,7 +2008,7 @@ Quiero feedback pragmático y realista como en una Pull Request profesional.
 
 ---
 
-# Prompt 21 - Aplicar correcciones
+# Prompt 20 - Aplicar correcciones
 
 ````markdown
 Aplica las correcciones detectadas en la code review al endpoint:
@@ -2043,3 +2043,120 @@ Además:
 - documenta brevemente los edge cases conocidos
 - indica qué deuda técnica queda aceptada conscientemente
 ```` 
+
+---
+
+# Prompt 21 - Corrección indicada en pr
+````markdown
+In `@backend/prisma/migrations/20260518174916_20260518194900_sql/migration.sql`:
+- Around line 2-8: The migration contains blocking CREATE INDEX statements
+(Application_positionId_idx, Application_candidateId_idx,
+Interview_applicationId_idx) which will block writes; because the project is on
+Prisma v5.13.0 (which cannot emit CREATE INDEX CONCURRENTLY), either upgrade
+Prisma to v7.4.0+ and regenerate the migration so the generated SQL uses CREATE
+INDEX CONCURRENTLY for those indexes, or remove those CREATE INDEX lines from
+this migration and apply the indexes out-of-band (run CREATE INDEX CONCURRENTLY
+manually during a maintenance window or via a separate deployment script) and
+document/schedule the maintenance window to avoid write-blocking.
+````
+
+---
+
+# Prompt 22 - Corrección indicada en pr
+````markdown
+In `@backend/src/__tests__/updateCandidateStage.test.ts`:
+- Around line 1-33: The tests are brittle because they use hard-coded DB IDs;
+change the spec to create deterministic fixtures at test setup (create a
+Candidate, Application, and InterviewStep via your repositories or factories and
+capture their IDs) and use those IDs in updateCandidateStage calls, then clean
+up or wrap each test in a transaction/rollback to reset state; additionally, in
+the controller tests replace direct DB calls by mocking updateCandidateStage
+when testing updateCandidateStageController so the controller tests only assert
+HTTP mapping and error handling, referencing the updateCandidateStage function
+and updateCandidateStageController to locate where to apply mocks and fixture
+usage.
+````
+
+---
+
+# Prompt 23 - Corrección indicada en pr
+````markdown
+In `@backend/src/application/services/candidateService.ts`:
+- Around line 91-113: In updateCandidateStage, add an upfront existence check
+for the candidate (use prisma.candidate.findUnique({ where: { id: candidateId }
+})) and if missing throw the dedicated STAGE_ERRORS.CANDIDATE_NOT_FOUND error
+before loading the application and performing the ownership check; ensure this
+candidate lookup occurs prior to the application.candidateId !== candidateId
+comparison so nonexistent candidates return the not-found error instead of the
+app-belongs error.
+````
+
+---
+
+# Prompt 24 - Corrección indicada en pr
+````markdown
+In `@backend/src/application/services/candidateService.ts`:
+- Line 156: The update currently sets updatedAt: new Date() (in
+candidateService.ts) which can drift from the DB timestamp; instead use the
+timestamp returned by the persistence layer—remove or stop setting updatedAt
+client-side in the updateCandidate (or equivalent) flow and read the persisted
+updatedAt from the repository/ORM update result (e.g., use the object returned
+by candidateRepository.update/candidateRepository.save or the DB returning
+clause and assign result.updatedAt to the response). Ensure the service returns
+that persisted updatedAt rather than a newly constructed Date().
+````
+
+---
+
+# Prompt 25 - Corrección indicada en pr
+````markdown
+In `@backend/src/presentation/controllers/candidateController.ts`:
+- Around line 46-64: The current parseInt usage in candidateController.ts
+(variables candidateId/candidateIdParam, applicationId, newStepId and type
+UpdateStageBody) allows partial numeric strings like "12abc"; replace those
+parseInt checks with strict positive-integer validation by ensuring the raw
+string matches /^\d+$/ (or use Number.isInteger after converting) before
+converting to a Number and checking > 0, then proceed with existing error
+responses (HTTP_STATUS.BAD_REQUEST) when validation fails; update the code paths
+that produce candidateId, applicationId and newStepId so they only accept fully
+numeric, positive integers and convert to numeric type after the regex/integer
+check.
+````
+
+---
+
+# Prompt 26 - Pasar de test manuales a test jest
+````markdown
+Al pasar los test de @docs/testing-checklist.md se ha visto que no está pasando las rutas al controlador para IDs no numéricos porque el patrón :id acepta cualquier cosa y Express intenta buscar la ruta.
+Añade esta validación más estricta en las rutas para que cumpla con lo indicado en los tests.
+Además quiero que pases de @docs/testing-checklist.md a test de jest sin inventar nada nuevo, simplemente transformando lo indicicado en @docs/testing-checklist.md .
+Indica qué cambios has hecho y cualquier problema que te encuentres
+````
+
+---
+
+# Prompt 27 - Corrección indicada en pr
+````markdown
+
+````
+
+---
+
+# Prompt 28 - Corrección indicada en pr
+````markdown
+
+````
+
+---
+
+# Prompt 25 - Corrección indicada en pr
+````markdown
+
+````
+
+---
+
+# Prompt 25 - Corrección indicada en pr
+````markdown
+
+````

@@ -1,6 +1,7 @@
 // Constantes compartidas para el módulo de candidatos
 
 export const STAGE_ERRORS = {
+    CANDIDATE_NOT_FOUND: 'Candidate not found',
     APP_NOT_FOUND: 'Application not found',
     APP_NOT_BELONG: 'Application does not belong to candidate',
     POSITION_CLOSED: 'Cannot update stage for closed position',

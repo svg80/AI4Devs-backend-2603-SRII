@@ -146,7 +146,7 @@ sequenceDiagram
 
 ### 3.1 Estructura Jerárquica
 
-```
+```text
 Company (1) ──────────── (N) Employee
   │
   └── (N) Position
@@ -250,7 +250,7 @@ graph LR
 
 ### 6.1 Ruta de Datos Requerida
 
-```
+```text
 Position (id) 
     │
     └── (N) Application
@@ -485,7 +485,7 @@ const calculateAverageScoreManual = async (
   const averageScore = totalScore / application.interviews.length;
 
   return {
-    averageScore: Math.round(averageScore * 100) / 100, // 2 decimales
+    averageScore: Math.round(averageScore * 10) / 10, // 1 decimal
     totalInterviews: application.interviews.length,
     scores: application.interviews.map(i => i.score)
   };
@@ -514,7 +514,7 @@ const calculateAverageScoreAggregated = async (
 
   return {
     averageScore: result._avg.score 
-      ? Math.round(result._avg.score * 100) / 100 
+      ? Math.round(result._avg.score * 10) / 10 
       : null,
     totalInterviews: result._count.id
   };
@@ -627,7 +627,7 @@ const getPositionCandidates = async (positionId: number) => {
       metrics: {
         totalInterviews: app.interviews.length,
         scoredInterviews: scoredInterviews.length,
-        averageScore: avgScore ? Math.round(avgScore * 100) / 100 : null,
+        averageScore: avgScore ? Math.round(avgScore * 10) / 10 : null,
         latestInterviewDate: app.interviews[0]?.interviewDate || null
       }
     };

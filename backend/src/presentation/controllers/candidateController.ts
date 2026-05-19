@@ -40,29 +40,36 @@ interface UpdateStageBody {
     notes?: string;
 }
 
+function isPositiveInteger(value: string | number): boolean {
+    if (typeof value === 'number') {
+        return Number.isInteger(value) && value > 0;
+    }
+    return /^\d+$/.test(String(value));
+}
+
 export const updateCandidateStageController = async (req: Request, res: Response): Promise<void> => {
     try {
         const candidateIdParam = req.params.id;
-        const candidateId = parseInt(candidateIdParam, 10);
 
-        if (isNaN(candidateId) || candidateId <= 0) {
+        if (!isPositiveInteger(candidateIdParam)) {
             res.status(HTTP_STATUS.BAD_REQUEST).json({ error: 'Invalid ID format' });
             return;
         }
+        const candidateId = Number(candidateIdParam);
 
         const body = req.body as UpdateStageBody;
-        const applicationId = parseInt(String(body.applicationId), 10);
-        const newStepId = parseInt(String(body.newStepId), 10);
 
-        if (isNaN(applicationId) || applicationId <= 0) {
+        if (!isPositiveInteger(body.applicationId)) {
             res.status(HTTP_STATUS.BAD_REQUEST).json({ error: 'Invalid application ID format' });
             return;
         }
+        const applicationId = Number(body.applicationId);
 
-        if (isNaN(newStepId) || newStepId <= 0) {
+        if (!isPositiveInteger(body.newStepId)) {
             res.status(HTTP_STATUS.BAD_REQUEST).json({ error: 'Invalid newStepId format' });
             return;
         }
+        const newStepId = Number(body.newStepId);
 
         const result = await updateCandidateStage(candidateId, {
             applicationId,
@@ -74,7 +81,7 @@ export const updateCandidateStageController = async (req: Request, res: Response
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
 
-        if (message === STAGE_ERRORS.APP_NOT_FOUND || message === STAGE_ERRORS.STEP_NOT_FOUND) {
+        if (message === STAGE_ERRORS.CANDIDATE_NOT_FOUND || message === STAGE_ERRORS.APP_NOT_FOUND || message === STAGE_ERRORS.STEP_NOT_FOUND) {
             res.status(HTTP_STATUS.NOT_FOUND).json({ error: message });
             return;
         }

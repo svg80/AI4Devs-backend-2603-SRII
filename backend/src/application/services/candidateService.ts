@@ -94,6 +94,14 @@ export const updateCandidateStage = async (
 ): Promise<StageUpdateResult> => {
     const { applicationId, newStepId, notes } = input;
 
+    const candidate = await prisma.candidate.findUnique({
+        where: { id: candidateId },
+    });
+
+    if (!candidate) {
+        throw new Error(STAGE_ERRORS.CANDIDATE_NOT_FOUND);
+    }
+
     // Query 1:Obtener aplicación con posición y step actual
     const application = await prisma.application.findUnique({
         where: { id: applicationId },
@@ -139,6 +147,7 @@ export const updateCandidateStage = async (
             currentInterviewStep: newStepId,
             notes: notes !== undefined ? notes : application.notes,
         },
+        select: { id: true, candidateId: true, positionId: true, notes: true, updatedAt: true },
     });
 
     // Position viene del primer query - no necesita query adicional
@@ -153,6 +162,6 @@ export const updateCandidateStage = async (
         stepName: newStep.name,
         stepOrder: newStep.orderIndex,
         notes: updatedApplication.notes,
-        updatedAt: new Date(),
+        updatedAt: updatedApplication.updatedAt,
     };
 };
